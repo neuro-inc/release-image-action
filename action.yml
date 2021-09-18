@@ -83,25 +83,30 @@ runs:
 
       shell: python
     - name: Download image artifact
+      if: ${{ ! steps.meta.outputs.skip }}
       run: gh run download ${{ steps.meta.outputs.run_id }} --name ${{ inputs.artifact }} --repo steps.meta.outputs.repo
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       shell: bash
     - name: Log in to the Container registryz
+      if: ${{ ! steps.meta.outputs.skip }}
       uses: docker/login-action@1.10.0
       with:
         registry: ghcr.io
         username: ${{ steps.meta.outputs.actor }}
         password: ${{ inputs.token }}
     - name: Load image to docker
+      if: ${{ ! steps.meta.outputs.skip }}
       run: docker load -i ${{ inputs.artifact }}.tar
       shell: bash
     - name: Tag remote image
+      if: ${{ ! steps.meta.outputs.skip }}
       run: |
         docker tag ${{ inputs.artifact }}:latest ghcr.io/neuro-inc/${{ inputs.artifact }}:latest
         docker tag ${{ inputs.artifact }}:latest ghcr.io/neuro-inc/${{ inputs.artifact }}:${{ steps.meta.outputs.version }}
       shell: bash
     - name: Push remote image
+      if: ${{ ! steps.meta.outputs.skip }}
       run: |
         docker push ghcr.io/neuro-inc/${{ inputs.artifact }}:latest
         docker push ghcr.io/neuro-inc/${{ inputs.artifact }}:${{ steps.meta.outputs.version }}
