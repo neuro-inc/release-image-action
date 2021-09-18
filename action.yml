@@ -1,20 +1,108 @@
 name: 'Release Image'
 description: 'Release Docker image on ghcr.io'
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  github:
+    description: 'github context, ${{ toJson(github) }}'
+    required: true
+  image:
+    description: 'short image name without repo/owner and tag, e.g. platformstorageapi'
+    required: true
+  artifact:
+    description: 'The artifact name uploaded by workflow_run workflow'
+    required: false
+    default: 'image'
+  token:
+    description: 'github token, ${{ secrets.GITHUB_TOKEN }}'
     required: true
 outputs:
+  skip:
+    description: "Skip publishing"
+    value: ${{ steps.meta.outputs.skip }}
   version:
     description: "Version"
-    value: ${{ steps.random-number-generator.outputs.random-id }}
+    value: ${{ steps.meta.outputs.version }}
 runs:
   using: "composite"
   steps:
-    - run: echo Hello ${{ inputs.who-to-greet }}.
+    - name: Collect meta info
+      id: meta
+      run: |
+        import json
+        import os
+        import re
+        import sys
+
+        ctx = json.loads(os.environ["INPUT_GITHUB"])
+        event_name = ctx["event_name"]
+        if event_name != "workflow_run":
+          print(
+              f"::error::Invalid event type {event_name}, "
+              "release-image-action should be executed on 'workflow_run' event"
+          )
+          sys.exit(1)
+
+        sha = ctx["sha"]
+        print(f"::set-output name=sha::{sha}")
+
+        actor = ctx["actor"]
+        print(f"::set-output name=actor::{actor}")
+
+        repo = ctx[repository"]
+        print(f"::set-output name=repo::{repo}")
+
+        default_branch = ctx["event"]["repository"]["default_branch"]
+        print(f"::set-output name=default_branch::{default_branch}")
+
+        workflow_run = ctx["event"]["workflow_run"]
+        default_ref = "refs/heads/" + default_branch
+        skip = ctx["ref"] != default_ref
+        if not skip:
+          skip = workflow_run["event"] != "push"
+        if not skip:
+          skip = workflow_run["head_branch] == default_branch
+        if not skip:
+          skip = workflow_run["conclusion"] != "success"
+
+        print(f"::set-output name=skip::{json.dumps(skip)}")
+
+        head_branch = ctx["event"]["workflow_run"]["head_branch"]
+        if not skip:
+            if not re.match(r"^d+\.d+(\.d+)?", head_branch):
+                print(
+                    f"::error:: Invalid tag {head_branch}; ",
+                    "The tag should have vYY.MM.NN format ",
+                    "where YY is the current year, MM is the current month, "
+                    "NN is incremental number, every next month resets the number to 0"
+                )
+                sys.exit(1)
+            else:
+                print(f"::set-output name=version::{head_branch[1:]}")
+
+        run_id = workflow_run["event"]["id"]
+        print(f"::set-output name=run_id::{run_id}")
+
+      shell: python
+    - name: Download image artifact
+      run: gh run download ${{ steps.meta.outputs.run_id }} --name ${{ inputs.artifact }} --repo steps.meta.outputs.repo
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
       shell: bash
-    - id: random-number-generator
-      run: echo "::set-output name=random-id::$(echo $RANDOM)"
+    - name: Log in to the Container registryz
+      uses: docker/login-action@1.10.0
+      with:
+        registry: ghcr.io
+        username: ${{ steps.meta.outputs.actor }}
+        password: ${{ inputs.token }}
+    - name: Load image to docker
+      run: docker load -i ${{ inputs.artifact }}.tar
       shell: bash
-    - run: ${{ github.action_path }}/goodbye.sh
+    - name: Tag remote image
+      run: |
+        docker tag ${{ inputs.artifact }}:latest ghcr.io/neuro-inc/${{ inputs.artifact }}:latest
+        docker tag ${{ inputs.artifact }}:latest ghcr.io/neuro-inc/${{ inputs.artifact }}:${{ steps.meta.outputs.version }}
+      shell: bash
+    - name: Push remote image
+      run: |
+        docker push ghcr.io/neuro-inc/${{ inputs.artifact }}:latest
+        docker push ghcr.io/neuro-inc/${{ inputs.artifact }}:${{ steps.meta.outputs.version }}
       shell: bash
