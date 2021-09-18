@@ -2,7 +2,7 @@ name: 'Release Image'
 description: 'Release Docker image on ghcr.io'
 inputs:
   github:
-    description: 'github context, ${{ toJson(github) }}'
+    description: 'github context, <toJson(github)>'
     required: true
   image:
     description: 'short image name without repo/owner and tag, e.g. platformstorageapi'
@@ -12,7 +12,7 @@ inputs:
     required: false
     default: 'image'
   token:
-    description: 'github token, ${{ secrets.GITHUB_TOKEN }}'
+    description: 'github token, <secrets.GITHUB_TOKEN>'
     required: true
 outputs:
   skip:
