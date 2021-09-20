@@ -69,9 +69,10 @@ runs:
             if not re.match(r"^v\d+\.\d+(\.\d+)?((a|b|rc)\d*)?$", head_branch):
                 print(
                     f"::error:: Invalid tag {head_branch}; ",
-                    "The tag should have vYY.MM.NN format ",
+                    "The tag should have vYY.MM[.NN][{a|b|rc}N] format ",
                     "where YY is the current year, MM is the current month, "
-                    "NN is incremental number, every next month resets the number to 0"
+                    "NN is incremental number, every next month resets the number to 0, "
+                    "a -- alpha, b -- beta, rc -- release candidate, N -- number.
                 )
                 sys.exit(1)
             else:
