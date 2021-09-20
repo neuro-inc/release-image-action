@@ -1,9 +1,6 @@
 name: 'Release Image'
 description: 'Release Docker image on ghcr.io'
 inputs:
-  github:
-    description: 'github context, <toJson(github)>'
-    required: true
   image:
     description: 'short image name without repo/owner and tag, e.g. platformstorageapi'
     required: true
@@ -111,7 +108,7 @@ runs:
 
       shell: python
       env:
-          INPUT_GITHUB: ${{ inputs.github }}
+          INPUT_GITHUB: ${{ toJson(github) }}
           INPUT_IMAGE:  ${{ inputs.image }}
           INPUT_ARTIFACT:  ${{ inputs.artifact }}
           INPUT_TOKEN:  ${{ inputs.token }}
