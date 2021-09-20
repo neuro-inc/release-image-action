@@ -92,14 +92,14 @@ runs:
 
         print("::notice::tag remote image")
         subprocess.run("docker", "tag", f"{artifact}:latest",
-                       f"ghcr.io/neuro-inc/f"{artifact}:latest", check=True)
+                       f"ghcr.io/neuro-inc/{artifact}:latest", check=True)
         subprocess.run("docker", "tag", f"{artifact}:latest",
-                       f"ghcr.io/neuro-inc/f"{artifact}:{version}", check=True)
+                       f"ghcr.io/neuro-inc/{artifact}:{version}", check=True)
 
         print("::notice::push to ghcr.io")
         subprocess.run("docker", "push",
-                       f"ghcr.io/neuro-inc/f"{artifact}:latest", check=True)
+                       f"ghcr.io/neuro-inc/{artifact}:latest", check=True)
         subprocess.run("docker", "push",
-                       f"ghcr.io/neuro-inc/f"{artifact}:{version}", check=True)
+                       f"ghcr.io/neuro-inc/{artifact}:{version}", check=True)
 
       shell: python
