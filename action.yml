@@ -43,7 +43,7 @@ runs:
 
         token = os.environ["INPUT_TOKEN"]
         image = os.environ["INPUT_IMAGE"]
-        artifact = os.environ["INPUT_ARTIFACT]
+        artifact = os.environ["INPUT_ARTIFACT"]
 
         sha = ctx["sha"]
 
