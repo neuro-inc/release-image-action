@@ -29,6 +29,9 @@ runs:
         import re
         import sys
 
+        import pprint
+        print(f"::notice::\n{pprint.pprint(os.environ)}")
+
         ctx = json.loads(os.environ["INPUT_GITHUB"])
         event_name = ctx["event_name"]
         if event_name != "workflow_run":
