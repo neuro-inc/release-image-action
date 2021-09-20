@@ -63,7 +63,7 @@ runs:
 
         head_branch = ctx["event"]["workflow_run"]["head_branch"]
         if not skip:
-            if not re.match(r"^d+\.d+(\.d+)?", head_branch):
+            if not re.match(r"^vd+\.d+(\.d+)?", head_branch):
                 print(
                     f"::error:: Invalid tag {head_branch}; ",
                     "The tag should have vYY.MM.NN format ",
