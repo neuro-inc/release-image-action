@@ -77,7 +77,7 @@ runs:
             else:
                 print(f"::set-output name=version::{head_branch[1:]}")
 
-        run_id = workflow_run["event"]["id"]
+        run_id = workflow_run["id"]
         print(f"::notice::Run id: {run_id}")
 
         if skip:
