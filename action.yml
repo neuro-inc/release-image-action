@@ -54,7 +54,7 @@ runs:
         if not skip:
           skip = workflow_run["event"] != "push"
         if not skip:
-          skip = workflow_run["head_branch] == default_branch
+          skip = workflow_run["head_branch"] == default_branch
         if not skip:
           skip = workflow_run["conclusion"] != "success"
 
