@@ -85,7 +85,7 @@ runs:
           sys.exit(0)
 
         print(f"::notice::download artifact {artifact}")
-        subprocess.run(["gh", "run", "download", run_id, "--name", artifact,
+        subprocess.run(["gh", "run", "download", str(run_id), "--name", artifact,
                        "--repo", repo], check=True, env={"GITHUB_TOKEN": token})
 
         print("::notice::login to docker")
