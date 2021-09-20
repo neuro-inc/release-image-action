@@ -27,16 +27,17 @@ runs:
         import json
         import os
         import re
+        import subprocess
         import sys
 
         ctx = json.loads(os.environ["INPUT_GITHUB"])
         event_name = ctx["event_name"]
         if event_name != "workflow_run":
-          print(
-              f"::error::Invalid event type {event_name}, "
-              "release-image-action should be executed on 'workflow_run' event"
-          )
-          sys.exit(1)
+            print(
+                f"::error::Invalid event type {event_name}, "
+                "release-image-action should be executed on 'workflow_run' event"
+            )
+            sys.exit(1)
 
         token = os.environ["INPUT_TOKEN"]
         image = os.environ["INPUT_IMAGE"]
