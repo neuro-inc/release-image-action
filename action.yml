@@ -112,4 +112,4 @@ runs:
           INPUT_GITHUB: ${{ inputs.github }}
           INPUT_IMAGE:  ${{ inputs.image }}
           INPUT_ARTIFACT:  ${{ inputs.artifact }}
-          UNPUT_TOKEN:  ${{ inputs.token }}
+          INPUT_TOKEN:  ${{ inputs.token }}
