@@ -72,7 +72,7 @@ runs:
                     "The tag should have vYY.MM[.NN][{a|b|rc}N] format ",
                     "where YY is the current year, MM is the current month, "
                     "NN is incremental number, every next month resets the number to 0, "
-                    "a -- alpha, b -- beta, rc -- release candidate, N -- number.
+                    "a -- alpha, b -- beta, rc -- release candidate, N -- number."
                 )
                 sys.exit(1)
             else:
