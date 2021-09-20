@@ -48,6 +48,8 @@ runs:
 
         repo = ctx["repository"]
 
+        owner = ctx["repository_owner"]
+
         default_branch = ctx["event"]["repository"]["default_branch"]
 
         workflow_run = ctx["event"]["workflow_run"]
@@ -94,15 +96,15 @@ runs:
 
         print("::notice::tag remote image")
         subprocess.run("docker", "tag", f"{image}:latest",
-                       f"ghcr.io/neuro-inc/{image}:latest", check=True)
+                       f"ghcr.io/{owner}/{image}:latest", check=True)
         subprocess.run("docker", "tag", f"{image}:latest",
-                       f"ghcr.io/neuro-inc/{image}:{version}", check=True)
+                       f"ghcr.io/{owner}/{image}:{version}", check=True)
 
         print("::notice::push to ghcr.io")
         subprocess.run("docker", "push",
-                       f"ghcr.io/neuro-inc/{image}:latest", check=True)
+                       f"ghcr.io/{owner}/{image}:latest", check=True)
         subprocess.run("docker", "push",
-                       f"ghcr.io/neuro-inc/{image}:{version}", check=True)
+                       f"ghcr.io/{owner}/{image}:{version}", check=True)
 
       shell: python
       env:
