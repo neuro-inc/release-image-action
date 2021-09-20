@@ -66,7 +66,7 @@ runs:
 
         head_branch = ctx["event"]["workflow_run"]["head_branch"]
         if not skip:
-            if not re.match(r"^v\d+\.\d+(\.\d+)?$", head_branch):
+            if not re.match(r"^v\d+\.\d+(\.\d+)?((a|b|rc)\d*)?$", head_branch):
                 print(
                     f"::error:: Invalid tag {head_branch}; ",
                     "The tag should have vYY.MM.NN format ",
@@ -75,7 +75,8 @@ runs:
                 )
                 sys.exit(1)
             else:
-                print(f"::set-output name=version::{head_branch[1:]}")
+                version = head_branch[1:]
+                print(f"::set-output name=version::{version}")
 
         run_id = workflow_run["id"]
         print(f"::notice::Run id: {run_id}")
