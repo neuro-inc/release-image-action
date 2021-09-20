@@ -44,7 +44,7 @@ runs:
 
         actor = ctx["actor"]
 
-        repo = ctx[repository"]
+        repo = ctx["repository"]
 
         default_branch = ctx["event"]["repository"]["default_branch"]
 
