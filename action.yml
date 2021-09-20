@@ -93,7 +93,7 @@ runs:
                        input=token.encode("utf8"), check=True)
 
         print(f"::notice::load imge {image} into docker")
-        subprocess.run(["docker", "load", "--input", f"{artifact}.tar"], check=True)
+        subprocess.run(["docker", "load", "--input", f"{image}.tar"], check=True)
 
         print("::notice::tag remote image")
         subprocess.run(["docker", "tag", f"{image}:latest",
