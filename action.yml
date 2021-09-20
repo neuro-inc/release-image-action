@@ -15,17 +15,14 @@ inputs:
     description: 'github token, <secrets.GITHUB_TOKEN>'
     required: true
 outputs:
-  skip:
-    description: "Skip publishing"
-    value: ${{ steps.meta.outputs.skip }}
   version:
     description: "Version"
-    value: ${{ steps.meta.outputs.version }}
+    value: ${{ steps.run.outputs.version }}
 runs:
   using: "composite"
   steps:
     - name: Collect meta info
-      id: meta
+      id: run
       run: |
         import json
         import os
@@ -41,17 +38,15 @@ runs:
           )
           sys.exit(1)
 
+        token = os.environ["INPUT_TOKEN"]
+
         sha = ctx["sha"]
-        print(f"::set-output name=sha::{sha}")
 
         actor = ctx["actor"]
-        print(f"::set-output name=actor::{actor}")
 
         repo = ctx[repository"]
-        print(f"::set-output name=repo::{repo}")
 
         default_branch = ctx["event"]["repository"]["default_branch"]
-        print(f"::set-output name=default_branch::{default_branch}")
 
         workflow_run = ctx["event"]["workflow_run"]
         default_ref = "refs/heads/" + default_branch
@@ -63,7 +58,6 @@ runs:
         if not skip:
           skip = workflow_run["conclusion"] != "success"
 
-        print(f"::set-output name=skip::{json.dumps(skip)}")
 
         head_branch = ctx["event"]["workflow_run"]["head_branch"]
         if not skip:
@@ -79,35 +73,33 @@ runs:
                 print(f"::set-output name=version::{head_branch[1:]}")
 
         run_id = workflow_run["event"]["id"]
-        print(f"::set-output name=run_id::{run_id}")
+        print(f"::notice::Run id: {run_id}")
+
+        if skip:
+          print("::notice::Skip release")
+          sys.exit(0)
+
+        print(f"::notice::download artifact {artifact}")
+        subprocess.run("gh", "run", "download", run_id, "--name", artifact, "--repo",
+                       repo", check=True, env={"GITHUB_TOKEN": token})
+
+        print("::notice::login to docker")
+        subprocess.run("docker", "login", "-u", actor, "--password-stdin", "ghcr.io",
+                       input=token.encode("utf8"), check=True)
+
+        print(f"::notice::load artifact {artifact} into docker")
+        subprocess.run("docker", "load", "--input", f"{artifact}.tar", check=True)
+
+        print("::notice::tag remote image")
+        subprocess.run("docker", "tag", f"{artifact}:latest",
+                       f"ghcr.io/neuro-inc/f"{artifact}:latest", check=True)
+        subprocess.run("docker", "tag", f"{artifact}:latest",
+                       f"ghcr.io/neuro-inc/f"{artifact}:{version}", check=True)
+
+        print("::notice::push to ghcr.io")
+        subprocess.run("docker", "push",
+                       f"ghcr.io/neuro-inc/f"{artifact}:latest", check=True)
+        subprocess.run("docker", "push",
+                       f"ghcr.io/neuro-inc/f"{artifact}:{version}", check=True)
 
       shell: python
-    - name: Download image artifact
-      if: ${{ ! steps.meta.outputs.skip }}
-      run: gh run download ${{ steps.meta.outputs.run_id }} --name ${{ inputs.artifact }} --repo steps.meta.outputs.repo
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-      shell: bash
-    - name: Log in to the Container registryz
-      if: ${{ ! steps.meta.outputs.skip }}
-      uses: docker/login-action@1.10.0
-      with:
-        registry: ghcr.io
-        username: ${{ steps.meta.outputs.actor }}
-        password: ${{ inputs.token }}
-    - name: Load image to docker
-      if: ${{ ! steps.meta.outputs.skip }}
-      run: docker load -i ${{ inputs.artifact }}.tar
-      shell: bash
-    - name: Tag remote image
-      if: ${{ ! steps.meta.outputs.skip }}
-      run: |
-        docker tag ${{ inputs.artifact }}:latest ghcr.io/neuro-inc/${{ inputs.artifact }}:latest
-        docker tag ${{ inputs.artifact }}:latest ghcr.io/neuro-inc/${{ inputs.artifact }}:${{ steps.meta.outputs.version }}
-      shell: bash
-    - name: Push remote image
-      if: ${{ ! steps.meta.outputs.skip }}
-      run: |
-        docker push ghcr.io/neuro-inc/${{ inputs.artifact }}:latest
-        docker push ghcr.io/neuro-inc/${{ inputs.artifact }}:${{ steps.meta.outputs.version }}
-      shell: bash
