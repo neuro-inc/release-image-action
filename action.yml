@@ -92,7 +92,7 @@ runs:
                 print(f"::set-output name=tag::{head_branch}")
                 version = head_branch[1:]
                 print(f"::set-output name=version::{version}")
-                print(f"::set-output name=prerelease::{dump(match.group("pre"))}")
+                print(f"::set-output name=prerelease::{dump(match.group('pre'))}")
 
 
         run_id = workflow_run["id"]
