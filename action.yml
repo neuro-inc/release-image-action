@@ -15,6 +15,15 @@ outputs:
   version:
     description: "Version"
     value: ${{ steps.run.outputs.version }}
+  skip:
+    description: "Skip"
+    value: ${{ steps.run.outputs.skip }}
+  tag:
+    description: "Tag"
+    value: ${{ steps.run.outputs.tag }}
+  prerelease:
+    description: "Prerelease"
+    value: ${{ steps.run.outputs.prerelease }}
 runs:
   using: "composite"
   steps:
@@ -60,10 +69,17 @@ runs:
         if not skip:
           skip = workflow_run["conclusion"] != "success"
 
+        def dump(val):
+            if val:
+                return 'Y'
+            else:
+                return ''
+
 
         head_branch = ctx["event"]["workflow_run"]["head_branch"]
         if not skip:
-            if not re.match(r"^v\d+\.\d+(\.\d+)?((a|b|rc)\d*)?$", head_branch):
+            match = re.match(r"^v\d+\.\d+(\.\d+)?(?P<pre>(a|b|rc)\d*)?$", head_branch)
+            if not match:
                 print(
                     f"::error:: Invalid tag {head_branch}; ",
                     "The tag should have vYY.MM[.NN][{a|b|rc}N] format ",
@@ -73,11 +89,16 @@ runs:
                 )
                 sys.exit(1)
             else:
+                print(f"::set-output name=tag::{head_branch}")
                 version = head_branch[1:]
                 print(f"::set-output name=version::{version}")
+                print(f"::set-output name=prerelease::{dump(match.group("pre"))}")
+
 
         run_id = workflow_run["id"]
         print(f"::notice::Run id: {run_id}")
+
+        print(f"::set-output name=skip::{dump(skip)}")
 
         if skip:
           print("::notice::Skip release")
