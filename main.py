@@ -30,14 +30,17 @@ owner = ctx["repository_owner"]
 default_branch = ctx["event"]["repository"]["default_branch"]
 
 workflow_run = ctx["event"]["workflow_run"]
-default_ref = "refs/heads/" + default_branch
-skip = ctx["ref"] != default_ref
-if not skip:
-    skip = workflow_run["event"] != "push"
-if not skip:
-    skip = workflow_run["head_branch"] == default_branch
-if not skip:
-    skip = workflow_run["conclusion"] != "success"
+
+# skip image release unless run succceded
+skip = workflow_run["conclusion"] != "success"
+# other rules only apply to non-release events
+if not skip and workflow_run["event"] != "release":
+    default_ref = "refs/heads/" + default_branch
+    skip = ctx["ref"] != default_ref
+    if not skip:
+        skip = workflow_run["event"] != "push"
+    if not skip:
+        skip = workflow_run["head_branch"] == default_branch
 
 
 def dump(val):
