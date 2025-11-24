@@ -31,7 +31,7 @@ repos:
   - id: check-symlinks
   - id: debug-statements
 - repo: https://github.com/asottile/pyupgrade
-  rev: 'v3.21.1'
+  rev: 'v3.21.2'
   hooks:
   - id: pyupgrade
     args: ['--py36-plus']
@@ -41,7 +41,7 @@ repos:
   - id: flake8
     exclude: "^docs/"
 - repo: https://github.com/rhysd/actionlint
-  rev: v1.7.8
+  rev: v1.7.9
   hooks:
   - id: actionlint-docker
     args:
